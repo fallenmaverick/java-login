@@ -49,5 +49,24 @@ pipeline {
          }
         }
       }
+	  
+	stage("Deploy to EKS"){
+      steps{
+          sh '''if kubectl get deploy | grep java-login-app
+            then
+            kubectl set image deployment jenkins-pipeline-build-demo java-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
+            kubectl rollout restart deployment java-login-app
+            else
+            kubectl apply -f deployment.yaml
+            fi'''
+      }
+    }
+    stage("Wait for Deployments") {
+      steps {
+        timeout(time: 2, unit: 'MINUTES') {
+          sh 'kubectl get svc'
+        }
+      }
+    }  
     }
 }
