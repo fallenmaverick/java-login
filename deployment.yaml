@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: jenkins-pipeline-build-demo
 spec:
+  securityContext:
+    runAsUser: 0
   replicas: 1
   selector:
     matchLabels:
