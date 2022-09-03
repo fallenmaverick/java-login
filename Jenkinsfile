@@ -52,12 +52,12 @@ pipeline {
 	  
 	stage("Deploy to EKS"){
       steps{
-          sh '''if /home/root/bin/kubectl get deploy | grep jenkins-pipeline-build-demo
+          sh '''if kubectl get deploy | grep jenkins-pipeline-build-demo
             then
-            /home/root/bin/kubectl set image deployment jenkins-pipeline-build-demo java-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
-            /home/root/bin/kubectl rollout restart deployment jenkins-pipeline-build-demo
+            kubectl set image deployment jenkins-pipeline-build-demo java-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
+            kubectl rollout restart deployment jenkins-pipeline-build-demo
             else
-            /home/root/bin/kubectl apply -f deployment.yaml
+            kubectl apply -f deployment.yaml
             fi'''
       }
     }
