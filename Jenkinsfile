@@ -54,8 +54,8 @@ pipeline {
       steps{
 	  
 		withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
-	  		sh "whoami"
-          		sh "kubectl apply -f deployment.yaml"
+	  		sh "su - ec2-user"
+          		sh "/home/ec2-user/bin/kubectl apply -f deployment.yaml"
 		}
       }
     }
