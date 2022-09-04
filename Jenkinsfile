@@ -54,7 +54,7 @@ pipeline {
       steps{
 	  
 		withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
-          		sh "/home/ec2-user/bin/kubectl get nodes"
+          		sh "/var/lib/jenkins/bin/kubectl get nodes"
 			
 		}
       }
