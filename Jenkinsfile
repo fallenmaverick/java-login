@@ -54,7 +54,14 @@ pipeline {
       steps{
 	  
 		withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
-          		sh "/var/lib/jenkins/bin/kubectl get nodes"
+          		sh '''if /var/lib/jenkins/bin/kubectl get deploy | grep java-login-app
+            		then
+            		/var/lib/jenkins/bin/kubectl set image deployment jenkins-pipeline-build-demo java-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
+            		/var/lib/jenkins/bin/kubectl rollout restart deployment java-login-app
+            		else
+		    	/var/lib/jenkins/bin/kubectl apply -f deployment.yaml
+            		fi'''
+			}
 			
 		}
       }
@@ -62,7 +69,7 @@ pipeline {
     stage("Wait for Deployments") {
       steps {
         timeout(time: 2, unit: 'MINUTES') {
-          sh '/home/ec2-user/bin/kubectl get svc'
+          sh '/var/lib/jenkins/bin/kubectl get svc'
         }
       }
     }  
