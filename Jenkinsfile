@@ -1,8 +1,7 @@
 pipeline {
-    agent {
-	    node {
-	    label 'jenkins-slave'
-        }
+    agent any
+    environment {
+
 	    AWS_ACCOUNT_ID="763628714830"
         AWS_DEFAULT_REGION="ap-south-1" 
         IMAGE_REPO_NAME="fallenmaverick"
