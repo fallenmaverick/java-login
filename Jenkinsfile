@@ -1,7 +1,9 @@
 pipeline {
-    agent any
-    environment {
-        AWS_ACCOUNT_ID="763628714830"
+    agent {
+	    node {
+	    label 'jenkins-slave'
+        }
+	    AWS_ACCOUNT_ID="763628714830"
         AWS_DEFAULT_REGION="ap-south-1" 
         IMAGE_REPO_NAME="fallenmaverick"
         IMAGE_TAG="latest"
@@ -11,7 +13,7 @@ pipeline {
    
     stages {
         
-         stage('Logging into AWS ECR') {
+        stage('Logging into AWS ECR') {
             steps {
                 script {
                 sh "aws ecr get-login-password --region ${ap-south-1} | docker login --username AWS --password-stdin ${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com"
@@ -26,52 +28,51 @@ pipeline {
             }
          }
 		stage('Build') {
-           steps {
+            steps {
         	sh '"mvn" -Dmaven.test.failure.ignore clean install' 
       		}
     	}
   
     // Building Docker images
-    stage('Building image') {
-      steps{
-        script {
-          dockerImage = docker.build "${fallenmaverick}:${latest}"
+        stage('Building image') {
+            steps{
+                script {
+                dockerImage = docker.build "${fallenmaverick}:${latest}"
+                }
+            }
         }
-      }
-    }
    
     // Uploading Docker images into AWS ECR
-    stage('Pushing to ECR') {
-     steps{  
-         script {
+        stage('Pushing to ECR') {
+            steps{  
+                script {
                 sh "docker tag ${fallenmaverick}:${latest} ${REPOSITORY_URI}:$IMAGE_TAG"
                 sh "docker push ${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com/${fallenmaverick}:${latest}"
-         }
+                }
+            }
         }
-      }
 	  
 	stage("Deploy to EKS"){
-      steps{
+        steps{
 	  
 		withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
           		sh '''if /var/lib/jenkins/bin/kubectl get deploy | grep java-login-app
             		then
-            		/var/lib/jenkins/bin/kubectl set image deployment jenkins-pipeline-build-demo java-app=${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com/${fallenmaverick}:${latest}
+            		/var/lib/jenkins/bin/kubectl set image deployment fallenmaverick java-app=${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com/${fallenmaverick}:${latest}
             		/var/lib/jenkins/bin/kubectl rollout restart deployment java-login-app
             		else
-		    	/var/lib/jenkins/bin/kubectl apply -f deployment.yaml
+		    	    /var/lib/jenkins/bin/kubectl apply -f deployment.yaml
             		fi'''
-			}
+			    }
 			
-		}
-      }
+		    }
+        }
     
     stage("Wait for Deployments") {
-      steps {
-        timeout(time: 2, unit: 'MINUTES') {
-          sh '/var/lib/jenkins/bin/kubectl get svc'
+        steps {
+            timeout(time: 2, unit: 'MINUTES') {
+            sh '/var/lib/jenkins/bin/kubectl get svc'
+            }
         }
-      }
     }  
-    }
 }
