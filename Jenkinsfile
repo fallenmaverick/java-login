@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment {
-        AWS_ACCOUNT_ID="503593019758"
+        AWS_ACCOUNT_ID="763628714830"
         AWS_DEFAULT_REGION="ap-south-1" 
-        IMAGE_REPO_NAME="jenkins-pipeline-build-demo"
+        IMAGE_REPO_NAME="fallenmaverick"
         IMAGE_TAG="latest"
         REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
 		PATH = "$PATH:/opt/maven/bin"
@@ -14,7 +14,7 @@ pipeline {
          stage('Logging into AWS ECR') {
             steps {
                 script {
-                sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                sh "aws ecr get-login-password --region ${ap-south-1} | docker login --username AWS --password-stdin ${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com"
                 }
                  
             }
@@ -22,7 +22,7 @@ pipeline {
         
         stage('GetCode'){
             steps{
-                git 'https://github.com/vikramDevPrac/java-login-app.git'
+                git 'https://github.com/fallenmaverick/java-login.git'
             }
          }
 		stage('Build') {
@@ -35,7 +35,7 @@ pipeline {
     stage('Building image') {
       steps{
         script {
-          dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+          dockerImage = docker.build "${fallenmaverick}:${latest}"
         }
       }
     }
@@ -44,8 +44,8 @@ pipeline {
     stage('Pushing to ECR') {
      steps{  
          script {
-                sh "docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG"
-                sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+                sh "docker tag ${fallenmaverick}:${latest} ${REPOSITORY_URI}:$IMAGE_TAG"
+                sh "docker push ${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com/${fallenmaverick}:${latest}"
          }
         }
       }
@@ -56,7 +56,7 @@ pipeline {
 		withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
           		sh '''if /var/lib/jenkins/bin/kubectl get deploy | grep java-login-app
             		then
-            		/var/lib/jenkins/bin/kubectl set image deployment jenkins-pipeline-build-demo java-app=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}
+            		/var/lib/jenkins/bin/kubectl set image deployment jenkins-pipeline-build-demo java-app=${763628714830}.dkr.ecr.${ap-south-1}.amazonaws.com/${fallenmaverick}:${latest}
             		/var/lib/jenkins/bin/kubectl rollout restart deployment java-login-app
             		else
 		    	/var/lib/jenkins/bin/kubectl apply -f deployment.yaml
