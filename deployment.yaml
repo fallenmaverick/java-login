@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins-pipeline-build-demo
+  name: fallenmaverick
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jenkins-pipeline-build-demo
+      app: fallenmaverick
   minReadySeconds: 5
   strategy:
     type: RollingUpdate
@@ -16,11 +16,11 @@ spec:
   template:
     metadata:
       labels:
-        app: jenkins-pipeline-build-demo
+        app: fallenmaverick
     spec:
       containers:
         - name: java-app
-          image: 503593019758.dkr.ecr.ap-south-1.amazonaws.com/jenkins-pipeline-build-demo:latest
+          image: 763628714830.dkr.ecr.ap-south-1.amazonaws.com/fallenmaverick
           ports:
             - containerPort: 8080
           env:
@@ -30,11 +30,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jenkins-pipeline-build-demo
+  name: fallenmaverick
 spec:
   type: LoadBalancer
   ports:
     - port: 80
       targetPort: 8080
   selector:
-    app: jenkins-pipeline-build-demo
+    app: fallenmaverick
